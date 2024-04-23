@@ -1,0 +1,86 @@
+[gd_scene load_steps=10 format=3 uid="uid://dxdugcqk4sl6j"]
+
+[ext_resource type="Texture2D" uid="uid://b2ytar678ns0f" path="res://dodge_the_creeps_2d_assets/dodge_the_creeps_2d_assets/art/enemyFlyingAlt_1.png" id="1_lx2hx"]
+[ext_resource type="Texture2D" uid="uid://cuuosbafiw0wf" path="res://dodge_the_creeps_2d_assets/dodge_the_creeps_2d_assets/art/enemyFlyingAlt_2.png" id="2_amc4o"]
+[ext_resource type="Texture2D" uid="uid://dvebtnp3j8e3p" path="res://dodge_the_creeps_2d_assets/dodge_the_creeps_2d_assets/art/enemySwimming_1.png" id="3_xlsg3"]
+[ext_resource type="Texture2D" uid="uid://k7lu04r2x2jk" path="res://dodge_the_creeps_2d_assets/dodge_the_creeps_2d_assets/art/enemySwimming_2.png" id="4_8m64o"]
+[ext_resource type="Texture2D" uid="uid://taa5mr71vu34" path="res://dodge_the_creeps_2d_assets/dodge_the_creeps_2d_assets/art/enemyWalking_1.png" id="5_uax01"]
+[ext_resource type="Texture2D" uid="uid://dta45yh2cl5vg" path="res://dodge_the_creeps_2d_assets/dodge_the_creeps_2d_assets/art/enemyWalking_2.png" id="6_y4ktx"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ci2km"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_lx2hx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_amc4o")
+}],
+"loop": true,
+"name": &"Fly",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("3_xlsg3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_8m64o")
+}],
+"loop": true,
+"name": &"Swim",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("5_uax01")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_y4ktx")
+}],
+"loop": true,
+"name": &"Walk",
+"speed": 5.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_y3idn"]
+radius = 34.0
+height = 100.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_leu71"]
+radius = 108.227
+
+[node name="Mob" type="MindlessMover" node_paths=PackedStringArray("behaviour")]
+behaviour = NodePath("MobBehaviour")
+angle_change_rate = 5
+collision_layer = 2
+collision_mask = 4
+
+[node name="MobBehaviour" type="MobBehaviour" parent="." node_paths=PackedStringArray("actual_base")]
+actual_base = NodePath("..")
+metadata/_edit_lock_ = true
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="MobBehaviour"]
+scale = Vector2(0.75, 0.75)
+sprite_frames = SubResource("SpriteFrames_ci2km")
+animation = &"Walk"
+metadata/_edit_lock_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_y3idn")
+metadata/_edit_lock_ = true
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+position = Vector2(2, -0.999998)
+scale = Vector2(4.5, 3.6)
+
+[node name="Mob View" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 5
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Mob View"]
+shape = SubResource("CircleShape2D_leu71")
+
+[connection signal="area_entered" from="Mob View" to="." method="on_area_colide"]
+[connection signal="area_exited" from="Mob View" to="." method="on_area_out_of_rng"]

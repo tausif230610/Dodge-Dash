@@ -14,3 +14,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 godot = { git = "https://github.com/godot-rust/gdext", branch = "master" }
+nanoserde = "0.1.37"
