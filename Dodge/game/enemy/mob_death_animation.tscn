@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://ycdar84dxg2u"]
+
+[ext_resource type="Material" uid="uid://cat7jyx3t0aya" path="res://game/General_Death_Effect_resource.tres" id="1_iw7b8"]
+
+[node name="MobDeathAnimation" type="OneTimeParticle"]
+color = Color(0.73577, 1.9517e-05, 0.226734, 1)
+process_material = ExtResource("1_iw7b8")

@@ -1,0 +1,55 @@
+[gd_scene load_steps=5 format=3 uid="uid://bdk6tibohkq1n"]
+
+[ext_resource type="PackedScene" uid="uid://dxdugcqk4sl6j" path="res://game/enemy/mob.tscn" id="1_46bko"]
+[ext_resource type="PackedScene" uid="uid://fe350cjyi7iw" path="res://game/player/Player.tscn" id="1_byt0f"]
+[ext_resource type="PackedScene" uid="uid://cl8alf1qrdkqi" path="res://game/HUD/hud.tscn" id="3_evnth"]
+
+[sub_resource type="Curve2D" id="Curve2D_5oqn1"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, -3, 0, 0, 0, 0, 0, 479, 1, 0, 0, 0, 0, 483, 715, 0, 0, 0, 0, 3, 708, 0, 0, 0, 0, -3, 0)
+}
+point_count = 5
+
+[node name="MainScene" type="MainScene"]
+hscore_file_path = "res://score.data"
+mob_scene = ExtResource("1_46bko")
+
+[node name="ScoreTimer" type="Timer" parent="."]
+
+[node name="MobTimer" type="Timer" parent="."]
+wait_time = 0.5
+
+[node name="StartTimer" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true
+
+[node name="ComboLevelReseter" type="Timer" parent="."]
+
+[node name="MobPath" type="Path2D" parent="."]
+curve = SubResource("Curve2D_5oqn1")
+
+[node name="MobSpawnLocation" type="PathFollow2D" parent="MobPath"]
+position = Vector2(-3, 0)
+rotation = 0.00207469
+
+[node name="PlayerStartLocation" type="Marker2D" parent="."]
+position = Vector2(221, 199)
+
+[node name="SlowDownTimer" type="Timer" parent="."]
+wait_time = 5.0
+one_shot = true
+
+[node name="Player" parent="." instance=ExtResource("1_byt0f")]
+dashlength = 150.0
+_bullet_speed = 12
+
+[node name="HUD" parent="." instance=ExtResource("3_evnth")]
+
+[connection signal="timeout" from="ScoreTimer" to="." method="on_score_timer_timeout"]
+[connection signal="timeout" from="MobTimer" to="." method="on_mob_timer_timeout"]
+[connection signal="timeout" from="StartTimer" to="." method="on_start_timer_timeout"]
+[connection signal="timeout" from="ComboLevelReseter" to="." method="combo_level_reseter"]
+[connection signal="timeout" from="SlowDownTimer" to="." method="on_slow_down_end"]
+[connection signal="death" from="Player" to="." method="game_over"]
+[connection signal="request_order_66" from="Player" to="." method="on_order_66"]
+[connection signal="request_time_slow_or_mob_speed_reduction_after_dash" from="Player" to="." method="player_time_slow_handler"]

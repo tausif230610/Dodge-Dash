@@ -77,7 +77,11 @@ mod mindless_mover;// base class of bullet and mob <-out dated
                    // more like abstract logic class?
 mod bullet;//
 mod mob;// this is the enemy class
-//mod main_scene;
+mod explosion_particle;
+mod general_button_behaviour;
+mod ui_button;
+mod hud;
+mod main_scene;
 
 #[gdextension]
 unsafe impl ExtensionLibrary for Myext {}

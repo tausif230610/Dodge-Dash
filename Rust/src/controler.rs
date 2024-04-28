@@ -1,6 +1,6 @@
-use godot::engine::global::MouseButtonMask;
+
 use godot:: prelude::*;//basic init stuff
-use godot:: engine::{INode, InputEvent, Node};//it would be a child of Node like time tracker
+use godot:: engine::{INode, Node};//it would be a child of Node like time tracker
 use crate::specialbutton:: SpecialButton;//Need special button to handle stuff like dash and shood
 use crate::timetracker::TimeTracker;//Need time tracker so that controler could connect to its child node time tracker
 #[derive(GodotClass)]//init stuff
@@ -13,56 +13,23 @@ pub struct Controler{
     is_dashing:bool,
     #[init(default=false)]
     is_shooting:bool,
-    keyboard_position:Vector2,
-    mouse_position:Vector2,
+
     base:Base<Node>
 }
 #[godot_api]
 impl INode for Controler{
-    // a mouse based control is also important
-    fn input(&mut self,event:Gd<InputEvent>){
-        //check if it is a mouse event
-        if event.is_class("InputEventMouse".into()){
-            //check if it is the left button being held
-            if event.get("button_mask".into()).to::<MouseButtonMask>()==MouseButtonMask::LEFT{
-            // get the mouse position
-            let pos=event.get("position".into()).to::<Vector2>();
-            // get the position of player as player is always controlers parnet
-            let parent_pos=self.base_mut().get_parent().unwrap().get("position".into()).to::<Vector2>();
-            // a bit of math
-            // parentpos+pos=mousepos
-            //pos=mousepos-parentpos
-            let mut truepos=pos-parent_pos;
-            godot_print!("{}",truepos);
-            //check if the mouse and the player is too close.
-            if truepos.length()<1.0{
-                truepos=Vector2::ZERO;
-            }
-            
-            //set the stuff
-            self.mouse_position=truepos.normalized();
-    
-            }
-            // set zero for everything
-            else{
-                self.mouse_position=Vector2::ZERO;
-            }
-        }
-        else {
-            self.mouse_position=Vector2::ZERO;
-        }
-    }
-
+    //// a mouse based control is also important
+    // joystick addon goes brrrrr
     fn process(&mut self,_delta:f64){
         let keyboard_input_handler=Input::singleton();//first i get the keyboard input handler. Note: it also works with controlers 
         
         let direcion=Vector2::new(keyboard_input_handler.get_action_strength("ui_right".into())-keyboard_input_handler.get_action_strength("ui_left".into()),keyboard_input_handler.get_action_strength("ui_down".into())-keyboard_input_handler.get_action_strength("ui_up".into())).normalized();//this is classic. no explanation needed :-] how ever i did normalize the vector at the end.
-        self.keyboard_position=direcion;//set the input direction for the player to use.
+        //set the input direction for the player to use.
         //Now this is where the fun begins.
         //this if and elif statements basically just ensures that Dash and Shoot buttons are truly held able. 
         //this is a bit hacky way but well it has to end this way i guess.
         //there should be a better way though :<
-        self.input_direction=(self.keyboard_position+self.mouse_position).normalized();
+        self.input_direction=direcion.normalized();
         if keyboard_input_handler.is_action_pressed("Dash".into()) && !self.is_dashing{
             self.special_input_handler(SpecialButton::Dash);
             self.is_dashing=true;

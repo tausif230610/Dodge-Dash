@@ -1,3 +1,4 @@
+
 use godot::obj::WithBaseField;
 use godot:: prelude::*;// init stuff
 use godot::engine::{AnimatedSprite2D, Area2D, CollisionShape2D, IArea2D, Timer};
@@ -38,8 +39,17 @@ pub struct Player{
     #[export]
     #[init(default=None)]
     bullet_scene:Option<Gd<PackedScene>>,
+    #[export]
+    #[init(default=None)]
+    death_particle_scene:Option<Gd<PackedScene>>,
     #[init(default=crate::actortype::Types::Player(false))]
     type_of_actor:crate::actortype::Types,
+    #[init(default=false)]
+    #[export]
+    is_invisible_due_to_rec_mode:bool,
+    #[export]
+    #[init(default=false)]
+    is_invincible:bool,
     #[export]
     #[init(default=20.0)]
     dashlength:real,// if i ever dash i would like to travle a specific distance. this keeps the dash constant(more like sonic 06 air dash).
@@ -64,6 +74,7 @@ pub struct Player{
     #[init(default=0.1)]// amount of time by when the player finish its tween animation. needs to be fine adjusted
     duration:f32,
     #[init(default=12)]// cause why not?
+    #[export]
     _bullet_speed:u8,
     base:Base<Area2D>
 }
@@ -75,8 +86,9 @@ impl IArea2D for Player {
         let sizeofviewport=self.base_mut().get_viewport_rect().size;
         self.viewportsize=sizeofviewport;
 
-        //self.base_mut().hide();
-        //self.is_alive=false;
+        self.base_mut().hide();
+        self.is_alive=false;
+        
     }
     fn process(&mut self,delta:f64){
         
@@ -145,38 +157,95 @@ impl Player {
 
     }
     #[func]
+    // so that other potential collider know its a player
     pub fn get_type(&mut self)->GString{
         let mut p=self.type_of_actor;
         return p.godot_gstring_serilize();
     }
+    // internal function to set the players type (is dashing)
     pub fn set_type(&mut self,typ:crate::actortype::Types){
         self.type_of_actor=typ;
     }
     
     #[signal]
     fn death();//// request the main scene to process what would happen after the initial hit
+    // if the player has died
     #[signal]
-    fn request_time_slow_or_mob_speed_reduction_after_dash(speed_devisor:f32);// request the main scene to slow down the mobs along side with dashing
+    fn request_time_slow_or_mob_speed_reduction_after_dash(speed_devisor:u8);// request the main scene to slow down the mobs along side with dashing
+    /*#[signal]
+    fn request_invincibility();//// request the main scene to gain invincivility aka hit would always kill the enemy unfortunately + score boost
+    */
+    // player can do it on its own now
     #[signal]
-    fn request_invincibility();// request the main scene to gain invincivility aka hit would always kill the enemy unfortunately + score boost
+    //let everyone know that dash or shoot number has changed
+    fn dash_change(dsnum:u8);
+    #[signal]
+    fn shoot_change(shnum:u8);
     #[signal]
     fn request_order_66();// request the main scene for executing order 66 on the Mobs. No score bonus but in an instant all enemy would die
-
+    #[func]
+    // make the player invincible and activate the timer
+    pub fn activate_invincibility(&mut self){
+        self.is_invincible=true;
+        let timer=&mut self.base_mut().get_node_as::<Timer>("UnkillableTime");
+        timer.start();
+        self.base_mut().get_node_as::<AnimatedSprite2D>("AnimatedSprite2D").get_material().unwrap().call("set_shader_parameter".into(), &[Variant::from("reffect"),Variant::from(true)]);
+        godot_print!("Player is invanurable");
+    }
+    #[func]
+    // after the player passed its phase then stop the player
+    pub fn normalize_player(&mut self){
+        godot_print!("player is normal");
+        self.is_invincible=false;
+        self.base_mut().get_node_as::<AnimatedSprite2D>("AnimatedSprite2D").get_material().unwrap().call("set_shader_parameter".into(), &[Variant::from("reffect"),Variant::from(false)]);
+    }
     #[func]
     ////ask the main scene if it was a genune hit or kill.
     //decide whether it was a kill or a miss. player can distroy there own bullets. it isnt a bug it is a feature
-    
     fn _on_enemy_area_enter(&mut self,mut body:Gd<Area2D>){
+        // if the player is dashing then grab the soul of mob(since bullet is made of mob soul) else get hit aka lose a life 
         if let crate::actortype::Types::Player(true)=self.type_of_actor{
             body.call("kill_command".into(),&[]);
             self.rem_shoot+=1;
+            //let everyone know that shoot has changed
+            let varient=Variant::from(self.rem_shoot);
+            self.base_mut().emit_signal("shoot_change".into(),&[varient]);
+            self.rem_shoot=min(self.rem_shoot, 3);
+        }// no body wana lose life while blinking
+        else if self.is_invincible {
+            body.call("kill_command".into(),&[]);
+            self.rem_shoot+=1;
+            self.rem_shoot=min(self.rem_shoot,3);
+            // de case where de player is invincible 
         }
-        else {
+        else if !self.is_invisible_due_to_rec_mode{
+            // if current life is zero then game over
             self.current_life-=1;
             if self.current_life==0{
+                // death 
                 self.on_genuen_death();
             }
+            else {
+                //make the player unkillable for a while
+                self.is_invisible_due_to_rec_mode=true;
+                // set the timer
+                let mut inv_timer=self.base_mut().get_node_as::<Timer>("Invincible_Time");
+                //start it and connect its time out to the player class
+                inv_timer.start();
+
+                let sprite=&mut self.base_mut().get_node_as::<AnimatedSprite2D>("AnimatedSprite2D");
+                // make the sprite blink
+                sprite.get_material().as_mut().unwrap().call("set_shader_parameter".into(), &[Variant::from("effect"),Variant::from(0.0)]);
+
+            }
         }
+    }
+    #[func]
+    fn on_inv_timer_timeout(&mut self){
+        // get the sprite, stop it from blinking and turn its invincibility flag
+        let sprite=&mut self.base_mut().get_node_as::<AnimatedSprite2D>("AnimatedSprite2D");
+        sprite.get_material().as_mut().unwrap().call("set_shader_parameter".into(), &[Variant::from("effect"),Variant::from(1.0)]);
+        self.is_invisible_due_to_rec_mode=false;
     }
     #[func]
     fn on_controler_queue_input(&mut self,butn:SpecialButton,heldtime:real){
@@ -208,20 +277,20 @@ impl Player {
 
                 1=>
                 {   // just a basic dash
-                    godot_print!("basic dash commited");
+
                     self.rem_dash-=1;
                 },
                 2=>{
                     // dash + time stop
-                    godot_print!("basic dash + time slow not invincible");
-                    self.base_mut().emit_signal("request_time_slow_or_mob_speed_reduction_after_dash".into(), &[Variant::from(1.2 as f32)]);
+
+                    self.base_mut().emit_signal("request_time_slow_or_mob_speed_reduction_after_dash".into(), &[Variant::from(2 as u8)]);
                     self.rem_dash-=2;
                 },
                 3=>{
                     // dash + matrix mode
-                    godot_print!("basic dash + time stop + invincible");
-                    self.base_mut().emit_signal("request_time_slow_or_mob_speed_reduction_after_dash".into(), &[Variant::from(100.2 as f32)]);
-                    self.base_mut().emit_signal("request_invincibility".into(), &[]);
+
+                    self.base_mut().emit_signal("request_time_slow_or_mob_speed_reduction_after_dash".into(), &[Variant::from(4 as u8)]);
+                    self.activate_invincibility();
                     self.rem_dash-=3;
                 },
                 _=>{
@@ -230,6 +299,9 @@ impl Player {
                 }
                 
             }
+            // let everyone know dash changed
+            let varient=Variant::from(self.rem_dash);
+            self.base_mut().emit_signal("dash_change".into(), &[varient]);
             // the dash is set to be a fixed direction so its justified
             current_position+=direction*self.dashlength*(dscharge as f32);
             
@@ -238,22 +310,32 @@ impl Player {
             match shcharge {
                 0=>{},
                 1=>{
+                    // take the bullet scene and instanciet it
                     let mut bullet_s=self.bullet_scene.as_mut().unwrap().instantiate_as::<crate::mindless_mover::MindlessMover>();
+                    // set its angle to the direction
                     bullet_s.bind_mut().set_angle(crate::_godot_radian_angle_to_semi_broken_hex_angle(direction.angle()));
+                    // set the speed to default bullet speed
                     bullet_s.bind_mut().set_speed(self._bullet_speed);
+                    // set bullets position to players position
                     bullet_s.bind_mut().base_mut().set_position(self.base_mut().get_position());
+                    //append it to the scene tree
                     self.base_mut().get_parent().unwrap().add_child(bullet_s.clone().upcast());
                     self.rem_shoot-=1;
                 },
                 2=>{
                     // same as 1
-                    godot_print!("3 big bullet has been shoot");
+                    for i in 0..3 {
+                        let mut bullet_s=self.bullet_scene.as_mut().unwrap().instantiate_as::<crate::mindless_mover::MindlessMover>();
+                        bullet_s.bind_mut().set_angle(crate::_godot_radian_angle_to_semi_broken_hex_angle(direction.angle()).wrapping_sub(32).wrapping_add(32*i));
+                        bullet_s.bind_mut().set_speed(self._bullet_speed);
+                        bullet_s.bind_mut().base_mut().set_position(self.base_mut().get_position());
+                        self.base_mut().get_parent().unwrap().add_child(bullet_s.clone().upcast());
+                    }
                     self.rem_shoot-=2;
                 },
                 3=>{
                     // Order 66 should be handled by main scene
                     self.base_mut().emit_signal("request_order_66".into(), &[]);
-                    godot_print!("Order 66 for the mobs");
                     self.rem_shoot-=3;
                 },
                 _=>{
@@ -262,6 +344,9 @@ impl Player {
                 }
             
             }
+            //let everyone know that shoot has changed
+            let varient=Variant::from(self.rem_shoot);
+            self.base_mut().emit_signal("shoot_change".into(), &[varient]);
             // upon shooting the player should feel a back thrust
             current_position-=direction*self.dashlength*(shcharge as f32)/4.0;
             },
@@ -294,6 +379,9 @@ impl Player {
         // recharge till rem dash=3
         if self.rem_dash<3{
         self.rem_dash+=1;
+        // let everyone know that dash has changed
+        let varient=Variant::from(self.rem_dash);
+        self.base_mut().emit_signal("dash_change".into(), &[varient]);
         }
         // 
         tmr.set_wait_time(min::<f64>(3.0,max::<f64>(self.rem_dash as f64,1.0)));
@@ -303,14 +391,21 @@ impl Player {
     fn on_genuen_death(&mut self){
         // hide self
         self.base_mut().hide();
-        // get the collision shape and disable it
+        // get the collision shape and disable it and start a particle effect
         let cs2d=&mut self.base_mut().get_node_as::<CollisionShape2D>("CollisionShape2D");
         cs2d.set_deferred("disabled".into(), Variant::from(true));
         self.is_alive=false;
+        if let Some(particle_info)=self.death_particle_scene.as_ref(){
+            let mut part_scene=particle_info.instantiate_as::<crate::explosion_particle::OneTimeParticle>();
+            part_scene.set_position(self.base_mut().get_position());
+            part_scene.set_rotation(self.base_mut().get_rotation());
+            //part_scene.set_emitting(true);
+            self.base_mut().get_parent().unwrap().add_child(part_scene.clone().upcast());
+        }
         self.base_mut().emit_signal("death".into(), &[]);
     }
     #[func]
-    fn start(&mut self,pos:Vector2){
+    pub fn start(&mut self,pos:Vector2){
         
         // show the player
         self.base_mut().show();

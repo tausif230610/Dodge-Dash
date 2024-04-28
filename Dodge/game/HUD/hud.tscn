@@ -1,0 +1,68 @@
+[gd_scene load_steps=5 format=3 uid="uid://cl8alf1qrdkqi"]
+
+[ext_resource type="Script" path="res://addons/virtual_joystick/virtual_joystick_instantiator.gd" id="1_0itmi"]
+[ext_resource type="Script" path="res://game/HUD/heartcontainer.gd" id="2_6h7q5"]
+[ext_resource type="PackedScene" uid="uid://bmy6m2lfbud7d" path="res://game/HUD/heart_pannel.tscn" id="2_d32mp"]
+[ext_resource type="FontFile" uid="uid://ch4hjy3wv3bxd" path="res://game/HUD/Font.tres" id="4_br0e6"]
+
+[node name="HUD" type="HUD"]
+
+[node name="TextBoxLabel" type="Label" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -35.5
+offset_top = -39.0
+offset_right = 35.5
+offset_bottom = 39.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("4_br0e6")
+theme_override_font_sizes/font_size = 64
+text = "HI"
+horizontal_alignment = 1
+
+[node name="Virtual Joystick" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -376.0
+offset_right = 485.0
+grow_vertical = 0
+size_flags_vertical = 8
+script = ExtResource("1_0itmi")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("2_6h7q5")
+scene = ExtResource("2_d32mp")
+
+[node name="ScoreLabel" type="Label" parent="."]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -22.5
+offset_right = 22.5
+offset_bottom = 78.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("4_br0e6")
+theme_override_font_sizes/font_size = 64
+text = "00"
+horizontal_alignment = 1
+
+[node name="HScoreLabel" type="Label" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 23.0
+grow_horizontal = 0
+size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("4_br0e6")
+theme_override_font_sizes/font_size = 64
+text = "00"
+horizontal_alignment = 2

@@ -1,7 +1,9 @@
 use std::fmt::Debug;
 //Without it Compiler gives warning
 use godot::{builtin::meta::GodotConvert, prelude::*};//i literelly implemented To Godot, From Godot, Godot Convert by hand for this thing. well what could go wrong?
-#[derive(PartialEq,Clone, Copy)]//pls dont break any more as you already give me a headace
+#[derive(PartialEq,Clone, Copy,Var,Export)]//pls dont break any more as you already give me a headace
+//yeah you are now breaking once more nice
+#[godot(via=u8)]
 //A basic enum implementing all the Special buttons
 
 pub enum SpecialButton{
@@ -71,5 +73,10 @@ impl std::fmt::Display for SpecialButton {
 impl Debug for SpecialButton {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f,"{}",self.specialbutton_to_string())
+    }
+}
+impl Default for SpecialButton {
+    fn default() -> Self {
+        Self::None
     }
 }
