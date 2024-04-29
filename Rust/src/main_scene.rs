@@ -49,7 +49,7 @@ impl MainScene {
     }
     #[func]
     fn mob_death_handler(&mut self){
-    godot_print!("mob_died");
+    
     let timer=&mut self.base_mut().get_node_as::<Timer>("ComboLevelReseter");
     timer.start();
     self.combo_level+=1;
@@ -88,8 +88,15 @@ impl MainScene {
     fn game_over(&mut self){
         let mut score_timer=self.base_mut().get_node_as::<Timer>("ScoreTimer");
         let mut  mob_timer=self.base_mut().get_node_as::<Timer>("MobTimer");
+        if self.score>self.hscore{
+            self.hscore=self.score;
+            let mut file=FileAccess::open(self.hscore_file_path.clone(), ModeFlags::WRITE).unwrap();
+            file.store_16(self.hscore);
+            file.close();
+        }
         score_timer.stop();
         mob_timer.stop();
+        self.base_mut().get_tree().unwrap().call_group("PlayUI".into(),"hide".into(), &[]);
     }
     #[func]
     fn player_time_slow_handler(&mut self,speed_devisor:u8){
@@ -110,7 +117,7 @@ impl MainScene {
     fn on_order_66(&mut self){
         let mob_num=self.base_mut().get_tree().as_mut().unwrap().get_nodes_in_group("Mob".into()).len() as u16;
         self.score+=mob_num*10;
-        self.base_mut().get_tree().unwrap().call_group("Mob".into(), "on_viewport_exit".into(), &[]);
+        self.base_mut().get_tree().unwrap().call_group("Mob".into(), "kill_command".into(), &[]);
     }
     #[func]
     fn start_game(&mut self){
@@ -121,6 +128,7 @@ impl MainScene {
         player.bind_mut().start(start_pos);
         start_timer.start();
         self.base_mut().get_tree().unwrap().call_group("Mob".into(),"kill_command".into(), &[]);
+        self.base_mut().get_tree().unwrap().call_group("PlayUI".into(),"show".into(), &[]);
     }
 
 }

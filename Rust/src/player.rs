@@ -41,14 +41,21 @@ pub struct Player{
     bullet_scene:Option<Gd<PackedScene>>,
     #[export]
     #[init(default=None)]
+    // the death particle scene
     death_particle_scene:Option<Gd<PackedScene>>,
+    // the blast particle scene
+    #[export]
+    #[init(default=None)]
+    balst_particle_scene:Option<Gd<PackedScene>>,
     #[init(default=crate::actortype::Types::Player(false))]
     type_of_actor:crate::actortype::Types,
     #[init(default=false)]
     #[export]
+    // is invisible 
     is_invisible_due_to_rec_mode:bool,
     #[export]
     #[init(default=false)]
+    // is invincible
     is_invincible:bool,
     #[export]
     #[init(default=20.0)]
@@ -56,6 +63,7 @@ pub struct Player{
     #[init(default=true)]// so that i dont accidentally dash or shoot uppon death
     is_alive:bool,
     #[init(default=3)]
+    // max life and current life
     max_life:u8,
     current_life:u8,
     #[init(default=3.0)]//seconds
@@ -98,16 +106,23 @@ impl IArea2D for Player {
         let direcion= self.base_mut().get_node_as::<Controler>("Controler").bind_mut().get_direction();
     
         // Up walk sprite selection basically
-        if direcion.x !=0.0{
-            sprite.set_animation("Walk".into());
-            sprite.set_flip_h(direcion.x<0.0);
-            sprite.set_flip_v(false);
+        sprite.set_animation(match direcion.y !=0.0 {
+            true=>"Up".into(),
+            _=>"Walk".into()
+        });
+        sprite.set_flip_h(direcion.x<0.0);
+        sprite.set_flip_v(direcion.y>0.0);
+        //old code
+        // if direcion.y !=0.0{
+        //     sprite.set_animation("Walk".into());
+        //     sprite.set_flip_h(direcion.x<0.0);
+        //     sprite.set_flip_v(false);
 
-        }
-        else if direcion.y !=0.0 {
-            sprite.set_animation("Up".into());
-            sprite.set_flip_v(direcion.y>0.0);
-        }
+        // }
+        // else if direcion.x !=0.0 {
+        //     sprite.set_animation("Up".into());
+        //     sprite.set_flip_v(direcion.y>0.0);
+        // }
         // why would the player try to move when its standing
         if direcion.length() !=0.0{
             sprite.play();
@@ -155,6 +170,13 @@ impl Player {
         self.current_life=self.max_life;
         self.is_alive=true;
 
+        // let everyone know that dash and shoot and life has changed
+        let variant=Variant::from(self.current_life);
+        self.base_mut().emit_signal("life_change".into(), &[variant]);
+        let varient=Variant::from(self.rem_dash);
+        self.base_mut().emit_signal("dash_change".into(),&[varient]);
+        let varient=Variant::from(self.rem_shoot);
+        self.base_mut().emit_signal("shoot_change".into(),&[varient]);
     }
     #[func]
     // so that other potential collider know its a player
@@ -181,6 +203,8 @@ impl Player {
     fn dash_change(dsnum:u8);
     #[signal]
     fn shoot_change(shnum:u8);
+    #[signal]
+    fn life_change(lfnum:u8);
     #[signal]
     fn request_order_66();// request the main scene for executing order 66 on the Mobs. No score bonus but in an instant all enemy would die
     #[func]
@@ -216,11 +240,17 @@ impl Player {
             body.call("kill_command".into(),&[]);
             self.rem_shoot+=1;
             self.rem_shoot=min(self.rem_shoot,3);
+        // let everyone know that dash has changed
+        let varient=Variant::from(self.rem_dash);
+        self.base_mut().emit_signal("dash_change".into(), &[varient]);
             // de case where de player is invincible 
         }
         else if !self.is_invisible_due_to_rec_mode{
             // if current life is zero then game over
-            self.current_life-=1;
+            self.current_life=self.current_life.wrapping_sub(1);
+            // let everyone know that life has changed
+            let variant=Variant::from(self.current_life);
+            self.base_mut().emit_signal("life_change".into(), &[variant]);
             if self.current_life==0{
                 // death 
                 self.on_genuen_death();
@@ -303,6 +333,21 @@ impl Player {
             let varient=Variant::from(self.rem_dash);
             self.base_mut().emit_signal("dash_change".into(), &[varient]);
             // the dash is set to be a fixed direction so its justified
+            let mut blast_scene=self.balst_particle_scene.clone();
+            // let mut parent=self.base_mut().get_parent().clone().as_mut().unwrap();
+            self.base_mut().get_parent().as_mut().unwrap().add_child(
+                if let Some(part_scene)=blast_scene.as_mut(){
+                    let mut bpscene=part_scene.instantiate_as::<crate::explosion_particle::OneTimeParticle>();
+                    bpscene.bind_mut().base_mut().set_position(current_position);
+                    bpscene.bind_mut().base_mut().set_rotation(direction.angle()+ crate::PI);
+                    bpscene.upcast()
+                    // parent.add_child(bpscene.clone().upcast())
+                    
+                }
+                else {
+                    crate::explosion_particle::OneTimeParticle::new_alloc().upcast()
+                }
+            );
             current_position+=direction*self.dashlength*(dscharge as f32);
             
             },
@@ -349,6 +394,28 @@ impl Player {
             self.base_mut().emit_signal("shoot_change".into(), &[varient]);
             // upon shooting the player should feel a back thrust
             current_position-=direction*self.dashlength*(shcharge as f32)/4.0;
+            let mut blast_scene=self.balst_particle_scene.clone();
+            // let mut parent=self.base_mut().get_parent().clone().as_mut().unwrap();
+            self.base_mut().get_parent().as_mut().unwrap().add_child(
+                if let Some(part_scene)=blast_scene.as_mut(){
+                    let mut bpscene=part_scene.instantiate_as::<crate::explosion_particle::OneTimeParticle>();
+                    bpscene.bind_mut().base_mut().set_position(current_position);
+                    bpscene.bind_mut().base_mut().set_rotation(direction.angle());
+                    bpscene.upcast()
+                    // parent.add_child(bpscene.clone().upcast())
+                    
+                }
+                else {
+                    crate::explosion_particle::OneTimeParticle::new_alloc().upcast()
+                }
+            );
+            // if let Some(part_scene)=self.balst_particle_scene.as_ref(){
+            //     let mut bpscene=part_scene.instantiate_as::<crate::explosion_particle::OneTimeParticle>();
+            //     bpscene.bind_mut().base_mut().set_position(current_position);
+            //     bpscene.bind_mut().base_mut().set_rotation(direction.angle());
+            //     // parent.add_child(bpscene.clone().upcast())
+                
+            // }
             },
             SpecialButton::None=>{
                 // same as the panic cases
@@ -361,6 +428,7 @@ impl Player {
         // nah now the player has a type. it is localized
         self.set_type(crate::actortype::Types::Player(true));
         // tween animating the player casually
+
         aniamtor_tween.tween_property(self.base_mut().clone().upcast(), "position".into(), Variant::from(current_position), dur);
         aniamtor_tween.connect("finished".into(), self.base().callable("on_tween_anim_stop"));
         

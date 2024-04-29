@@ -36,9 +36,7 @@ if signed_dist.abs()<signer(delta).abs(){
 // if the distance is small enough then snap.
 to
 }
-else if to.wrapping_sub(from) == 128 {
-    from.wrapping_add(delta)
-}
+
 else {
     // get an angle on the direction of distance but with the value of delta
     let res =from.wrapping_add(designer(signer(delta)*signed_dist.signum()));
@@ -77,11 +75,10 @@ mod mindless_mover;// base class of bullet and mob <-out dated
                    // more like abstract logic class?
 mod bullet;//
 mod mob;// this is the enemy class
-mod explosion_particle;
-mod general_button_behaviour;
-mod ui_button;
-mod hud;
-mod main_scene;
+mod explosion_particle;// this is the explosion particle class
+mod ui_button;// this is the special button class
+mod hud;// this is the hud class
+mod main_scene;// this is the main scene class
 
 #[gdextension]
 unsafe impl ExtensionLibrary for Myext {}

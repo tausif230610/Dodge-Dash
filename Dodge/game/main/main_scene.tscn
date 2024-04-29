@@ -42,6 +42,7 @@ one_shot = true
 [node name="Player" parent="." instance=ExtResource("1_byt0f")]
 dashlength = 150.0
 _bullet_speed = 12
+position = Vector2(0, 1)
 
 [node name="HUD" parent="." instance=ExtResource("3_evnth")]
 
@@ -50,6 +51,9 @@ _bullet_speed = 12
 [connection signal="timeout" from="StartTimer" to="." method="on_start_timer_timeout"]
 [connection signal="timeout" from="ComboLevelReseter" to="." method="combo_level_reseter"]
 [connection signal="timeout" from="SlowDownTimer" to="." method="on_slow_down_end"]
+[connection signal="dash_change" from="Player" to="HUD" method="on_dash_change"]
 [connection signal="death" from="Player" to="." method="game_over"]
+[connection signal="life_change" from="Player" to="HUD" method="on_life_change"]
 [connection signal="request_order_66" from="Player" to="." method="on_order_66"]
 [connection signal="request_time_slow_or_mob_speed_reduction_after_dash" from="Player" to="." method="player_time_slow_handler"]
+[connection signal="shoot_change" from="Player" to="HUD" method="on_shoot_change"]

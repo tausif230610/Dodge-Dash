@@ -1,5 +1,6 @@
 use godot::obj::NewAlloc;
 use godot:: prelude::*;
+// this is the bullet behaviour node 2d for position
 use godot::engine::{Area2D, Node2D};// inti stuff
 #[derive(GodotClass)]
 #[class(base=Node2D)]

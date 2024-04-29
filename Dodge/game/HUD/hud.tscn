@@ -1,43 +1,54 @@
-[gd_scene load_steps=5 format=3 uid="uid://cl8alf1qrdkqi"]
+[gd_scene load_steps=14 format=3 uid="uid://cl8alf1qrdkqi"]
 
 [ext_resource type="Script" path="res://addons/virtual_joystick/virtual_joystick_instantiator.gd" id="1_0itmi"]
 [ext_resource type="Script" path="res://game/HUD/heartcontainer.gd" id="2_6h7q5"]
 [ext_resource type="PackedScene" uid="uid://bmy6m2lfbud7d" path="res://game/HUD/heart_pannel.tscn" id="2_d32mp"]
 [ext_resource type="FontFile" uid="uid://ch4hjy3wv3bxd" path="res://game/HUD/Font.tres" id="4_br0e6"]
+[ext_resource type="Texture2D" uid="uid://2nhsco6l31y7" path="res://dodge_the_creeps_2d_assets/dashiconnormal.png" id="5_wnbda"]
+[ext_resource type="Texture2D" uid="uid://cxyewfjweva8u" path="res://dodge_the_creeps_2d_assets/dashiconreleased.png" id="7_811iv"]
+[ext_resource type="Texture2D" uid="uid://cou7huowim5wr" path="res://dodge_the_creeps_2d_assets/P1barbackground.png" id="7_mo1xb"]
+[ext_resource type="Texture2D" uid="uid://bqbvyj3bx02nu" path="res://dodge_the_creeps_2d_assets/P2barbackground.png" id="8_luo0f"]
+[ext_resource type="Texture2D" uid="uid://ci0w4pjedmmqx" path="res://dodge_the_creeps_2d_assets/P3barbackground.png" id="9_43vjn"]
+[ext_resource type="Texture2D" uid="uid://c1epshjo4bne7" path="res://dodge_the_creeps_2d_assets/ShooticonNormal.png" id="10_su3gb"]
+[ext_resource type="Texture2D" uid="uid://377icryu66bu" path="res://dodge_the_creeps_2d_assets/ShooticonReleased.png" id="11_il0li"]
+[ext_resource type="Texture2D" uid="uid://d1r54c3ntvld5" path="res://dodge_the_creeps_2d_assets/mobile.png" id="12_oc56d"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_cdfbe"]
+radius = 215.73
 
 [node name="HUD" type="HUD"]
 
-[node name="TextBoxLabel" type="Label" parent="."]
-anchors_preset = 8
-anchor_left = 0.5
+[node name="TextBoxLabel" type="Label" parent="." groups=["PlayUI"]]
+anchors_preset = 14
 anchor_top = 0.5
-anchor_right = 0.5
+anchor_right = 1.0
 anchor_bottom = 0.5
-offset_left = -35.5
 offset_top = -39.0
-offset_right = 35.5
 offset_bottom = 39.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_fonts/font = ExtResource("4_br0e6")
 theme_override_font_sizes/font_size = 64
-text = "HI"
+text = "Dodge & Dash"
 horizontal_alignment = 1
+autowrap_mode = 3
 
-[node name="Virtual Joystick" type="Control" parent="."]
+[node name="Timer" type="Timer" parent="TextBoxLabel"]
+
+[node name="Virtual Joystick" type="Control" parent="." groups=["Mobile"]]
 layout_mode = 3
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_top = -376.0
-offset_right = 485.0
 grow_vertical = 0
 size_flags_vertical = 8
 script = ExtResource("1_0itmi")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="LifeContainer" type="HBoxContainer" parent="." groups=["PlayUI"]]
+clip_contents = true
 offset_right = 40.0
 offset_bottom = 40.0
+scale = Vector2(0.5, 0.5)
 script = ExtResource("2_6h7q5")
 scene = ExtResource("2_d32mp")
 
@@ -66,3 +77,195 @@ theme_override_fonts/font = ExtResource("4_br0e6")
 theme_override_font_sizes/font_size = 64
 text = "00"
 horizontal_alignment = 2
+
+[node name="Button_Container" type="VBoxContainer" parent="." groups=["PlayUI"]]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -49.0
+offset_top = -224.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="Dashbutton" type="SUIButton" parent="Button_Container" node_paths=PackedStringArray("joint_progress_bar1", "joint_progress_bar2", "joint_progress_bar3") groups=["PlayUI"]]
+joint_progress_bar1 = NodePath("Node2D/TextureProgressBar")
+joint_progress_bar2 = NodePath("TextureProgressBar2")
+joint_progress_bar3 = NodePath("Node2D2/TextureProgressBar3")
+position = Vector2(-62, 1)
+scale = Vector2(0.183099, 0.190317)
+texture_normal = ExtResource("5_wnbda")
+texture_pressed = ExtResource("7_811iv")
+shape = SubResource("CircleShape2D_cdfbe")
+shape_visible = false
+action = "Dash"
+
+[node name="Node2D" type="Node2D" parent="Button_Container/Dashbutton" groups=["PlayUI"]]
+position = Vector2(256.692, 110.342)
+rotation = -0.118682
+scale = Vector2(0.5, 0.5)
+
+[node name="TextureProgressBar" type="TextureProgressBar" parent="Button_Container/Dashbutton/Node2D" groups=["PlayUI"]]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 28.9706
+offset_top = -335.209
+offset_right = 948.971
+offset_bottom = 468.791
+grow_horizontal = 0
+grow_vertical = 0
+max_value = 1.0
+fill_mode = 2
+nine_patch_stretch = true
+texture_under = ExtResource("7_mo1xb")
+texture_progress = ExtResource("7_mo1xb")
+tint_under = Color(0, 0, 0, 1)
+tint_progress = Color(1, 0, 0, 1)
+
+[node name="TextureProgressBar2" type="TextureProgressBar" parent="Button_Container/Dashbutton" groups=["PlayUI"]]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -507.923
+offset_top = -630.526
+offset_right = 202.077
+offset_bottom = -31.5263
+grow_horizontal = 0
+grow_vertical = 0
+min_value = 1.0
+max_value = 2.0
+value = 1.0
+fill_mode = 2
+texture_under = ExtResource("8_luo0f")
+texture_progress = ExtResource("8_luo0f")
+tint_under = Color(0, 0, 0, 1)
+tint_progress = Color(0.100439, 0.337708, 1, 1)
+
+[node name="Node2D2" type="Node2D" parent="Button_Container/Dashbutton" groups=["PlayUI"]]
+position = Vector2(436.923, 115.596)
+rotation = 0.118682
+scale = Vector2(0.8, 0.8)
+
+[node name="TextureProgressBar3" type="TextureProgressBar" parent="Button_Container/Dashbutton/Node2D2" groups=["PlayUI"]]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -208.919
+offset_top = 91.5024
+offset_right = 501.081
+offset_bottom = 690.502
+grow_horizontal = 0
+grow_vertical = 0
+min_value = 2.0
+max_value = 3.0
+value = 2.0
+fill_mode = 2
+texture_under = ExtResource("9_43vjn")
+texture_progress = ExtResource("9_43vjn")
+tint_under = Color(0, 0, 0, 1)
+tint_progress = Color(0, 1, 0, 1)
+
+[node name="ShootButton" type="SUIButton" parent="Button_Container" node_paths=PackedStringArray("joint_progress_bar1", "joint_progress_bar2", "joint_progress_bar3") groups=["PlayUI"]]
+joint_progress_bar1 = NodePath("Node2D/TextureProgressBar")
+joint_progress_bar2 = NodePath("TextureProgressBar2")
+joint_progress_bar3 = NodePath("Node2D2/TextureProgressBar3")
+position = Vector2(-63, 118)
+scale = Vector2(0.183099, 0.190317)
+texture_normal = ExtResource("10_su3gb")
+texture_pressed = ExtResource("11_il0li")
+shape = SubResource("CircleShape2D_cdfbe")
+shape_visible = false
+action = "Shoot"
+
+[node name="Node2D" type="Node2D" parent="Button_Container/ShootButton" groups=["PlayUI"]]
+position = Vector2(256.692, 110.342)
+rotation = -0.118682
+scale = Vector2(0.5, 0.5)
+
+[node name="TextureProgressBar" type="TextureProgressBar" parent="Button_Container/ShootButton/Node2D" groups=["PlayUI"]]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 31.1069
+offset_top = -260.871
+offset_right = 951.107
+offset_bottom = 543.129
+grow_horizontal = 0
+grow_vertical = 0
+max_value = 1.0
+fill_mode = 2
+nine_patch_stretch = true
+texture_under = ExtResource("7_mo1xb")
+texture_progress = ExtResource("7_mo1xb")
+tint_under = Color(0, 0, 0, 1)
+tint_progress = Color(1, 0, 0, 1)
+
+[node name="TextureProgressBar2" type="TextureProgressBar" parent="Button_Container/ShootButton" groups=["PlayUI"]]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -507.923
+offset_top = -633.746
+offset_right = 202.077
+offset_bottom = -34.7455
+grow_horizontal = 0
+grow_vertical = 0
+min_value = 1.0
+max_value = 2.0
+value = 1.0
+fill_mode = 2
+texture_under = ExtResource("8_luo0f")
+texture_progress = ExtResource("8_luo0f")
+tint_under = Color(0, 0, 0, 1)
+tint_progress = Color(0.100439, 0.337708, 1, 1)
+
+[node name="Node2D2" type="Node2D" parent="Button_Container/ShootButton" groups=["PlayUI"]]
+position = Vector2(436.923, 115.596)
+rotation = 0.118682
+scale = Vector2(0.8, 0.8)
+
+[node name="TextureProgressBar3" type="TextureProgressBar" parent="Button_Container/ShootButton/Node2D2" groups=["PlayUI"]]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -204.482
+offset_top = 130.215
+offset_right = 505.518
+offset_bottom = 729.215
+grow_horizontal = 0
+grow_vertical = 0
+min_value = 2.0
+max_value = 3.0
+value = 2.0
+fill_mode = 2
+texture_under = ExtResource("9_43vjn")
+texture_progress = ExtResource("9_43vjn")
+tint_under = Color(0, 0, 0, 1)
+tint_progress = Color(0, 1, 0, 1)
+
+[node name="MobileToogleButton" type="Button" parent="." groups=["PlayUI"]]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -57.0
+offset_right = 34.0
+grow_vertical = 0
+icon = ExtResource("12_oc56d")
+icon_alignment = 1
+expand_icon = true
+
+[connection signal="pressed" from="MobileToogleButton" to="." method="toggle_mobile"]

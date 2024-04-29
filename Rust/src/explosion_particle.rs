@@ -1,8 +1,9 @@
 use godot::obj::WithBaseField;
-use godot::prelude::*;
+use godot::prelude::*;// init stuff class is gpuparticle2d
 use godot::engine::{GpuParticles2D, IGpuParticles2D};
 #[derive(GodotClass)]
 #[class(init,base=GpuParticles2D)]
+// basically color is settable stuff is already set and self distruct due to being one time 
 pub struct OneTimeParticle{
 #[export]
 color:Color,
