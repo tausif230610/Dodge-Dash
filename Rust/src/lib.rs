@@ -1,6 +1,6 @@
 #![feature(linked_list_remove)]
 pub extern crate nanoserde;//using nanoserde from the og godot lib
-use std::f32::consts::{PI, TAU};
+use std::f32::consts::PI;
 use godot::prelude::*;
 const DFPS:f32=60.0;// base frame rate
 struct Myext{}//init everything
