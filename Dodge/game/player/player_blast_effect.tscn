@@ -1,8 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://csj26gibrfvnu"]
+[gd_scene load_steps=7 format=3 uid="uid://csj26gibrfvnu"]
+
+[ext_resource type="AudioStream" uid="uid://fvyv3w4k8wig" path="res://dodge_the_creeps_2d_assets/PlayerShoot.wav" id="1_t54h2"]
 
 [sub_resource type="Gradient" id="Gradient_qv52r"]
-offsets = PackedFloat32Array(0, 0.241935, 0.524194, 0.725806)
-colors = PackedColorArray(1, 1, 1, 1, 0.818792, 0.682651, 0.133491, 1, 1, 0, 0, 1, 0, 0, 0, 1)
+offsets = PackedFloat32Array(0, 0.680328)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_2xva5"]
 gradient = SubResource("Gradient_qv52r")
@@ -14,7 +16,7 @@ point_count = 3
 [sub_resource type="CurveTexture" id="CurveTexture_kh3i1"]
 curve = SubResource("Curve_ss2ou")
 
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ytlh2"]
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_3jpps"]
 lifetime_randomness = 0.5
 particle_flag_disable_z = true
 initial_velocity_min = 500.0
@@ -25,6 +27,12 @@ scale_max = 10.0
 scale_curve = SubResource("CurveTexture_kh3i1")
 color_ramp = SubResource("GradientTexture1D_2xva5")
 
-[node name="PlayerBlastEffect" type="OneTimeParticle"]
-color = Color(1, 1, 1, 1)
-process_material = SubResource("ParticleProcessMaterial_ytlh2")
+[node name="OneTimeParticle" type="OneTimeParticle" node_paths=PackedStringArray("explosion_sound")]
+color = Color(0.267207, 0.744425, 1, 1)
+explosion_sound = NodePath("AudioStreamPlayer")
+amount = 4
+process_material = SubResource("ParticleProcessMaterial_3jpps")
+lifetime = 0.5
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("1_t54h2")

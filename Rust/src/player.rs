@@ -1,4 +1,6 @@
 
+use std::f32::consts::PI;
+
 use godot::obj::WithBaseField;
 use godot:: prelude::*;// init stuff
 use godot::engine::{AnimatedSprite2D, Area2D, CollisionShape2D, IArea2D, Timer};
@@ -41,7 +43,11 @@ pub struct Player{
     bullet_scene:Option<Gd<PackedScene>>,
     #[export]
     #[init(default=None)]
+    // the sound effect handler which play the hit sound upon the player getting hit.
+    hit_sfx:Option<Gd<AudioStreamPlayer>>,
     // the death particle scene
+    #[export]
+    #[init(default=None)]
     death_particle_scene:Option<Gd<PackedScene>>,
     // the blast particle scene
     #[export]
@@ -81,9 +87,9 @@ pub struct Player{
     viewportsize:Vector2,// the viewport size so that the player do not go out of bounds
     #[init(default=0.1)]// amount of time by when the player finish its tween animation. needs to be fine adjusted
     duration:f32,
-    #[init(default=12)]// cause why not?
+    #[init(default=12.0)]// cause why not?
     #[export]
-    _bullet_speed:u8,
+    _bullet_speed:f32,
     base:Base<Area2D>
 }
 #[godot_api]
@@ -246,6 +252,7 @@ impl Player {
             // de case where de player is invincible 
         }
         else if !self.is_invisible_due_to_rec_mode{
+            self.hit_sfx.as_mut().unwrap().play();
             // if current life is zero then game over
             self.current_life=self.current_life.wrapping_sub(1);
             // let everyone know that life has changed
@@ -358,7 +365,7 @@ impl Player {
                     // take the bullet scene and instanciet it
                     let mut bullet_s=self.bullet_scene.as_mut().unwrap().instantiate_as::<crate::mindless_mover::MindlessMover>();
                     // set its angle to the direction
-                    bullet_s.bind_mut().set_angle(crate::_godot_radian_angle_to_semi_broken_hex_angle(direction.angle()));
+                    bullet_s.bind_mut().set_angle(direction.angle());
                     // set the speed to default bullet speed
                     bullet_s.bind_mut().set_speed(self._bullet_speed);
                     // set bullets position to players position
@@ -371,7 +378,7 @@ impl Player {
                     // same as 1
                     for i in 0..3 {
                         let mut bullet_s=self.bullet_scene.as_mut().unwrap().instantiate_as::<crate::mindless_mover::MindlessMover>();
-                        bullet_s.bind_mut().set_angle(crate::_godot_radian_angle_to_semi_broken_hex_angle(direction.angle()).wrapping_sub(32).wrapping_add(32*i));
+                        bullet_s.bind_mut().set_angle(direction.angle()-(PI/2.0)+((PI*i as f32)/2.0));
                         bullet_s.bind_mut().set_speed(self._bullet_speed);
                         bullet_s.bind_mut().base_mut().set_position(self.base_mut().get_position());
                         self.base_mut().get_parent().unwrap().add_child(bullet_s.clone().upcast());

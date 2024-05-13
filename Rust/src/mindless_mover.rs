@@ -1,6 +1,8 @@
-use std::collections::LinkedList;//this is important to store the targets at view
+use std::collections::LinkedList;
+use std::f32::consts::TAU; //this is important to store the targets at view
 
 
+use godot::engine::utilities::move_toward;
 use godot::obj::WithBaseField;
 
 use godot:: prelude::*;//init stuff
@@ -12,9 +14,9 @@ use crate::DFPS;// need the fps
 pub struct MindlessMover{
     //classic R theta style calculations
     #[var]
-    pub angle:u8,
+    pub angle:f32,
     #[var]
-    pub speed:u8,
+    pub speed:f32,
     #[export]
     #[init(default=None)]
     pub death_particle_scene:Option<Gd<PackedScene>>,
@@ -28,29 +30,31 @@ pub struct MindlessMover{
     // the behaviour type that controls the object as a whole aka the brain if it is the body
     behaviour:Option<Gd<Node2D>>,
     #[export]
-    #[init(default=5)]
+    #[init(default=5.0)]
     // how fast this entity can react
-    angle_change_rate:u8,
+    angle_change_rate:f32,
     pub base:Base<Area2D>
 }
 #[godot_api]
 impl IArea2D for MindlessMover {
     fn process(&mut self,delta:f64){
-        // current radian angle
-        let radangle=crate::_semi_broken_hex_angle_to_godot_radian_angle(self.angle);
+        // moved to f32 based angles
+        // // current radian angle
+        // let radangle=crate::_semi_broken_hex_angle_to_godot_radian_angle(self.angle);
         // calculated velocity
-        let velocity=Vector2::new(self.speed as f32, 0.0).rotated(radangle);
+        let angl=self.angle;
+        let velocity=Vector2::new(self.speed as f32, 0.0).rotated(angl);
         // get the current position
         let mut position=self.base_mut().get_position();
         // add the velocity to the position
         position+=velocity*delta as f32 *DFPS;
         // set position and rotation
         self.base_mut().set_position(position);
-        self.base_mut().set_rotation(radangle);
+        self.base_mut().set_rotation(angl);
         // get the targets
         let  act_trgts=self.actual_targets.clone();
         // create a vector of angles
-        let mut angls:Vec<u8>=Vec::new();
+        let mut angls:Vec<f32>=Vec::new();
         match act_trgts {
             // get the targets from the options
             Some( act_tr)=>{
@@ -62,11 +66,11 @@ impl IArea2D for MindlessMover {
                 // get the associated values
                 let vl=tr.1;
                 // get the hex angel
-                let mut angle_of_target=crate::_godot_radian_angle_to_semi_broken_hex_angle(self.base_mut().get_position().angle_to_point(trgt_ara.get_position()));
+                let mut angle_of_target=self.base_mut().get_position().angle_to_point(trgt_ara.get_position());
                 // match the associations
                 match vl {
                     1=>{},
-                    -1=>{angle_of_target=angle_of_target.wrapping_neg();},
+                    -1=>{angle_of_target=TAU -angle_of_target;},
                     _=>{angle_of_target=self.angle;}
                     
                 }
@@ -76,20 +80,24 @@ impl IArea2D for MindlessMover {
                 angls.push(angle_of_target);
             }
             // take the avarage
-            let mut sum:u64=0;
+            let mut sum:f32=0.0;
             for i in &angls{
-                sum+=*i as u64;
+                sum+=*i;
             }
             
-            sum=sum/(angls.len() as u64);
-            let truesum=sum as u8;
-            let ngl:u8;
-            // special move towards function. it works and thats it!
-            unsafe{
-            ngl=crate::circular_hex_angle_move_towards(self.angle, truesum, self.angle_change_rate);
-            }
+            //moved to f32 based angles
+            
+            sum=sum/(angls.len() as f32);
+            self.angle=move_toward(self.angle as f64,sum as f64, self.angle_change_rate as f64) as f32;
+            //// let truesum=sum as u8;
+            //// let ngl:u8;
+            // // special move towards function. it works and thats it!
+            //// unsafe{
+            //// ngl=crate::circular_hex_angle_move_towards(self.angle, truesum, self.angle_change_rate);
+            //// }
 
-            self.angle=ngl;
+            //// self.angle=ngl;
+            
         }
             ,
             None=>{
@@ -105,7 +113,7 @@ impl MindlessMover {
     #[signal]
     fn death();
     #[func]
-    // tell the main scene that the mob is dead.
+    // tell the main scene that the object is dead sfx is handled via particles ////and also play the deathsound effect if that happen.
     fn kill_command(&mut self){
         if let Some(particle_info)=self.death_particle_scene.as_ref(){
             let mut part_scene=particle_info.instantiate_as::<crate::explosion_particle::OneTimeParticle>();
@@ -113,8 +121,22 @@ impl MindlessMover {
             part_scene.set_rotation(self.base_mut().get_rotation());
             
             self.base_mut().get_parent().unwrap().add_child(part_scene.clone().upcast());
+
         }
         self.base_mut().emit_signal("death".into(), &[]);
+        self.base_mut().queue_free();
+    }
+    #[func]
+    // tell the main scene that the obkect is dead and dont do wacky stuff and sfx is handled via particles ////and play the death sound effect.
+    fn boring_kill_command(&mut self){
+        if let Some(particle_info)=self.death_particle_scene.as_ref(){
+            let mut part_scene=particle_info.instantiate_as::<crate::explosion_particle::OneTimeParticle>();
+            part_scene.set_position(self.base_mut().get_position());
+            part_scene.set_rotation(self.base_mut().get_rotation());
+
+            self.base_mut().get_parent().unwrap().add_child(part_scene.clone().upcast());
+        }
+        //self.base_mut().emit_signal("death".into(), &[]);
         self.base_mut().queue_free();
     }
     #[func]
@@ -196,7 +218,7 @@ impl MindlessMover {
     }
     // devide if false else mult
     #[func]
-    pub fn slow_down_handler(&mut self,speed_factor:u8,dev_or_mul:bool){
+    pub fn slow_down_handler(&mut self,speed_factor:f32,dev_or_mul:bool){
         
         if dev_or_mul{
             self.speed*=speed_factor;

@@ -3,5 +3,6 @@
 [ext_resource type="Material" uid="uid://cat7jyx3t0aya" path="res://game/General_Death_Effect_resource.tres" id="1_4x0i2"]
 
 [node name="PlayerDeathEffect" type="OneTimeParticle"]
-color = Color(0.405179, 0.592296, 1, 1)
+color = Color(0.334118, 0.93064, 0, 1)
 process_material = ExtResource("1_4x0i2")
+lifetime = 0.5

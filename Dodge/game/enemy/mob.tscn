@@ -54,11 +54,11 @@ radius = 108.227
 [node name="Mob" type="MindlessMover" node_paths=PackedStringArray("behaviour") groups=["Mob"]]
 death_particle_scene = ExtResource("1_21u26")
 behaviour = NodePath("MobBehaviour")
+angle_change_rate = 0.085
 collision_layer = 2
 collision_mask = 4
 
 [node name="MobBehaviour" type="MobBehaviour" parent="." node_paths=PackedStringArray("actual_base")]
-max_speed = 8
 actual_base = NodePath("..")
 metadata/_edit_lock_ = true
 

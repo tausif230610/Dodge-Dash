@@ -7,10 +7,14 @@ use godot::engine::{GpuParticles2D, IGpuParticles2D};
 pub struct OneTimeParticle{
 #[export]
 color:Color,
+#[export]
+#[init(default=None)]
+explosion_sound:Option<Gd<AudioStreamPlayer>>,
 base:Base<GpuParticles2D>
 }
 #[godot_api]
 impl IGpuParticles2D for OneTimeParticle {
+    // allow it to be self distructable and set the default settings and play there explosion sound
     fn ready(&mut self) {
         let callfunc=self.base_mut().callable("self_distruct");
         self.base_mut().set_lifetime(0.5);
@@ -20,11 +24,15 @@ impl IGpuParticles2D for OneTimeParticle {
         let clr=self.color;
         self.base_mut().set_modulate(clr);
         self.base_mut().connect("finished".into(), callfunc);
+        if let Some(se)=self.explosion_sound.as_mut(){
+            se.play();
+        }
     }
 }
 #[godot_api]
 impl OneTimeParticle {
     #[func]
+    // self distruction part
     fn self_distruct(&mut self){
         self.base_mut().queue_free();
     }

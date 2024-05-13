@@ -3,7 +3,7 @@
 
 
 
-use godot::engine::utilities::{randi_range, randomize};// rng stuff
+use godot::engine::utilities::{randf_range,randi_range, randomize};// rng stuff
 use godot::obj::NewAlloc;// for alocation
 use godot:: prelude::*;//init stuff
 use godot::engine::{AnimatedSprite2D,Node2D};// animated sprite 2d
@@ -14,9 +14,9 @@ use crate::mindless_mover::MindlessMover; // i dont need any extra interface
 pub struct MobBehaviour{
     // min speed and max speed
     #[export]
-    max_speed:u8,
+    max_speed:f32,
     #[export]
-    min_speed:u8,
+    min_speed:f32,
     #[export]
     // the actual base that would be manupulated
     actual_base:Gd<MindlessMover>,
@@ -28,8 +28,8 @@ impl INode2D for MobBehaviour {
 // init them
 fn init(base:Base<Node2D>)->Self{
 Self {
-    max_speed: 10,
-    min_speed: 5,
+    max_speed: 10.0,
+    min_speed: 5.0,
     actual_base:NewAlloc::new_alloc(),
     
     base }
@@ -44,7 +44,7 @@ base_mover.bind_mut().set_type(crate::actortype::Types::Mob);
 // call randomize as a lot of RNG follows
 randomize();
 // get a random intiger between min speed and max soeed
-let speed_of_mob=randi_range(self.min_speed as i64, self.max_speed as i64) as u8;
+let speed_of_mob=randf_range(self.min_speed as f64, self.max_speed as f64) as f32;
 // set the speed to mob
 base_mover.bind_mut().set_speed(speed_of_mob);
 // get the mob type

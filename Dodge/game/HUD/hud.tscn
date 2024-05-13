@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://cl8alf1qrdkqi"]
+[gd_scene load_steps=16 format=3 uid="uid://cl8alf1qrdkqi"]
 
 [ext_resource type="Script" path="res://addons/virtual_joystick/virtual_joystick_instantiator.gd" id="1_0itmi"]
 [ext_resource type="Script" path="res://game/HUD/heartcontainer.gd" id="2_6h7q5"]
@@ -13,12 +13,40 @@
 [ext_resource type="Texture2D" uid="uid://377icryu66bu" path="res://dodge_the_creeps_2d_assets/ShooticonReleased.png" id="11_il0li"]
 [ext_resource type="Texture2D" uid="uid://d1r54c3ntvld5" path="res://dodge_the_creeps_2d_assets/mobile.png" id="12_oc56d"]
 
+[sub_resource type="InputEventAction" id="InputEventAction_cwhkm"]
+action = &"ui_accept"
+
+[sub_resource type="Shortcut" id="Shortcut_nlx25"]
+events = [SubResource("InputEventAction_cwhkm")]
+
 [sub_resource type="CircleShape2D" id="CircleShape2D_cdfbe"]
 radius = 215.73
 
 [node name="HUD" type="HUD"]
 
-[node name="TextBoxLabel" type="Label" parent="." groups=["PlayUI"]]
+[node name="OverTimer" type="Timer" parent="."]
+wait_time = 2.0
+one_shot = true
+
+[node name="StartButton" type="Button" parent="."]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -88.5
+offset_top = -86.0
+offset_right = 88.5
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_fonts/font = ExtResource("4_br0e6")
+theme_override_font_sizes/font_size = 64
+shortcut = SubResource("Shortcut_nlx25")
+text = "Start"
+
+[node name="TextBoxLabel" type="Label" parent="."]
 anchors_preset = 14
 anchor_top = 0.5
 anchor_right = 1.0
@@ -34,6 +62,8 @@ horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="Timer" type="Timer" parent="TextBoxLabel"]
+wait_time = 2.0
+one_shot = true
 
 [node name="Virtual Joystick" type="Control" parent="." groups=["Mobile"]]
 layout_mode = 3
@@ -56,13 +86,13 @@ scene = ExtResource("2_d32mp")
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -22.5
-offset_right = 22.5
-offset_bottom = 78.0
+offset_left = -102.5
+offset_right = 102.5
+offset_bottom = 39.0
 grow_horizontal = 2
 theme_override_fonts/font = ExtResource("4_br0e6")
-theme_override_font_sizes/font_size = 64
-text = "00"
+theme_override_font_sizes/font_size = 32
+text = "SC: 00"
 horizontal_alignment = 1
 
 [node name="HScoreLabel" type="Label" parent="."]
@@ -74,8 +104,8 @@ offset_bottom = 23.0
 grow_horizontal = 0
 size_flags_horizontal = 4
 theme_override_fonts/font = ExtResource("4_br0e6")
-theme_override_font_sizes/font_size = 64
-text = "00"
+theme_override_font_sizes/font_size = 32
+text = "Hi: 00"
 horizontal_alignment = 2
 
 [node name="Button_Container" type="VBoxContainer" parent="." groups=["PlayUI"]]
@@ -257,15 +287,27 @@ texture_progress = ExtResource("9_43vjn")
 tint_under = Color(0, 0, 0, 1)
 tint_progress = Color(0, 1, 0, 1)
 
-[node name="MobileToogleButton" type="Button" parent="." groups=["PlayUI"]]
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_top = -57.0
-offset_right = 34.0
-grow_vertical = 0
+[node name="Buttons" type="HBoxContainer" parent="."]
+custom_minimum_size = Vector2(10, 10)
+offset_top = 663.0
+offset_right = 40.0
+offset_bottom = 703.0
+
+[node name="MobileToogleButton" type="Button" parent="Buttons" groups=["PlayUI"]]
+layout_mode = 2
+text = "     "
 icon = ExtResource("12_oc56d")
 icon_alignment = 1
 expand_icon = true
 
-[connection signal="pressed" from="MobileToogleButton" to="." method="toggle_mobile"]
+[node name="Help_Toogle" type="Button" parent="Buttons"]
+layout_mode = 2
+text = "?"
+icon_alignment = 1
+expand_icon = true
+
+[connection signal="timeout" from="OverTimer" to="." method="finalize_game_over"]
+[connection signal="pressed" from="StartButton" to="." method="on_start_button_pressed"]
+[connection signal="timeout" from="TextBoxLabel/Timer" to="." method="txttmrout"]
+[connection signal="pressed" from="Buttons/MobileToogleButton" to="." method="toggle_mobile"]
+[connection signal="pressed" from="Buttons/Help_Toogle" to="." method="eth"]

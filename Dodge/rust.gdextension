@@ -5,3 +5,5 @@ reloadable = true
 [libraries]
 windows.debug.x86_64 =   "res://../Rust/target/debug/rust.dll"
 windows.release.x86_64 = "res://../Rust/target/release/rust.dll"
+web.debug.wasm32 = "res://../rust/target/wasm32-unknown-emscripten/debug/rust.wasm"
+web.release.wasm32 = "res://../rust/target/wasm32-unknown-emscripten/release/rust.wasm"

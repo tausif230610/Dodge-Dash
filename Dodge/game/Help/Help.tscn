@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3 uid="uid://bhh5x78kyoe0t"]
+
+[ext_resource type="FontFile" uid="uid://ch4hjy3wv3bxd" path="res://game/HUD/Font.tres" id="1_0h244"]
+
+[node name="CanvasLayer" type="CanvasLayer"]
+
+[node name="Label" type="Label" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -242.0
+offset_top = -359.0
+offset_right = 235.0
+offset_bottom = 359.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("1_0h244")
+theme_override_font_sizes/font_size = 32
+text = "Welcome to Dodge & Dash. A quality of life updated version of the original Dodge the creeps. Since it is one of my starter games one may find lackings in this projects manual. Anyway use Z to dash and X to shoot. For mobile users use the mobile mode to use the joypad. Aside from that use the buttons with the meters to perform actions. Kill as many enemies as you can before you die."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+justification_flags = 171

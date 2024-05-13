@@ -17,7 +17,7 @@ curve = SubResource("Curve_ss2ou")
 [resource]
 lifetime_randomness = 0.5
 particle_flag_disable_z = true
-spread = 90.0
+spread = 180.0
 initial_velocity_min = 500.0
 initial_velocity_max = 500.0
 gravity = Vector3(0, 0, 0)
