@@ -4,7 +4,7 @@ use std::f32::consts::{PI, TAU};
 use godot::prelude::*;
 const DFPS:f32=60.0;// base frame rate
 struct Myext{}//init everything
-pub unsafe fn signer(a:u8)->i8{
+/*pub unsafe fn signer(a:u8)->i8{
     // for jobs sake
     union Convertor {
         ap:u8,
@@ -62,7 +62,7 @@ pub fn _semi_broken_hex_angle_to_godot_radian_angle(angle:u8)->f32{
     // devide by 256 to get 0 to Tau aka jobs done
     ((angle as f32 )* TAU) /256.0
 }
-
+*/
 mod actortype;//actor types job is to allow cross communication between fellow types. like mob trying to chase player or fleeing 
 // from bullet or bullet chasing mob etc.
 mod timetracker;//stuff responsible for inputs having time data
